@@ -4,7 +4,7 @@
 
 WITH paid_data as
     (SELECT channel, date::date, date_granularity, COALESCE(SUM(spend),0) as spend, COALESCE(SUM(clicks),0) as clicks, COALESCE(SUM(impressions),0) as impressions, 
-        COALESCE(SUM(purchases),0) as purchases, COALESCE(SUM(revenue),0) as revenue
+        COALESCE(SUM(add_to_cart),0) as add_to_cart, COALESCE(SUM(purchases),0) as purchases, COALESCE(SUM(revenue),0) as revenue
     FROM
         (SELECT 'Meta' as channel, date, date_granularity, 
             spend, impressions, link_clicks as clicks, add_to_cart, purchases, revenue
