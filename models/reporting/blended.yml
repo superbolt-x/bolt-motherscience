@@ -10,3 +10,6 @@ sources:
 
     - name: googleads_campaign_performance
       identifier: motherscience_googleads_campaign_performance
+
+    - name: shopify_sales
+      identifier: motherscience_shopify_sales
