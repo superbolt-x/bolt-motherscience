@@ -14,6 +14,10 @@ WITH paid_data as
         SELECT 'Google Ads' as channel, date, date_granularity, campaign_name,
             spend, impressions, clicks, null as add_to_cart, purchases, revenue
         FROM {{ source('reporting','googleads_campaign_performance') }}
+        UNION ALL
+        SELECT 'TikTok' as channel, date, date_granularity, campaign_name,
+            spend, impressions, clicks, null as add_to_cart, purchases, revenue
+        FROM {{ source('reporting','tiktok_ad_performance') }}
         )
     GROUP BY channel, date, date_granularity, campaign_name),
 
