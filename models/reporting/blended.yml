@@ -13,3 +13,6 @@ sources:
 
     - name: shopify_sales
       identifier: motherscience_shopify_sales
+
+    - name: tiktok_ad_performance
+      identifier: motherscience_tiktok_ad_performance
