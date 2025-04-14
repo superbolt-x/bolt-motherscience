@@ -38,7 +38,7 @@ WITH paid_data as
         COUNT(DISTINCT CASE WHEN customer_order_index > 1 THEN order_id ELSE 0 END) as sho_repeat_orders, 
         COALESCE(SUM(CASE WHEN customer_order_index > 1 THEN gross_revenue ELSE 0 END),0) as sho_repeat_order_revenue,
         0 as sho_net_revenue
-    FROM {{ source('reporting','shopify_daily_sales_by_order')
+    FROM {{ source('reporting','shopify_daily_sales_by_order')}}
     GROUP BY channel, date, date_granularity, campaign_name
         {% if not loop.last %}UNION ALL
         {% endif %}
