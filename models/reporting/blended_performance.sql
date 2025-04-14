@@ -55,7 +55,7 @@ WITH initial_sho_data as
     FROM initial_sho_data
     GROUP BY channel, date, date_granularity, campaign_name
     UNION ALL
-    SELECT 'Shopify' as channel, date_granularity, date, null as campaign_name, 
+    SELECT 'Shopify' as channel, date, date_granularity, null as campaign_name, 
         0 as spend, 0 as acq_spend, 0 as impressions, 0 as clicks, 0 as add_to_cart, 0 as paid_purchases, 0 as paid_acq_purchases, 0 as paid_revenue,
         0 as sho_purchases, 0 as sho_revenue, 0 as sho_first_orders, 0 as sho_first_order_revenue, 0 as sho_repeat_orders, 0 as sho_repeat_order_revenue,
         COALESCE(SUM(net_sales),0) as sho_net_revenue
