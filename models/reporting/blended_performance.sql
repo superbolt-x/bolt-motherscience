@@ -45,7 +45,7 @@ WITH initial_sho_data as
         COALESCE(SUM(CASE WHEN customer_order_index > 1 THEN gross_revenue ELSE 0 END),0) as sho_repeat_order_revenue,
         0 as sho_net_revenue
     FROM initial_sho_data
-    GROUP BY channel, date, date_granularity, campaign_name
+    GROUP BY channel, date_granularity, date, campaign_name
         {% if not loop.last %}UNION ALL
         {% endif %}
     {% endfor %}
@@ -55,7 +55,7 @@ WITH initial_sho_data as
         0 as sho_purchases, 0 as sho_revenue, 0 as sho_first_orders, 0 as sho_first_order_revenue, 0 as sho_repeat_orders, 0 as sho_repeat_order_revenue,
         COALESCE(SUM(net_sales),0) as sho_net_revenue
     FROM {{ source('reporting','shopify_sales') }}
-    GROUP BY channel, date, date_granularity, campaign_name)
+    GROUP BY channel, date_granularity, date, campaign_name)
     
 SELECT * FROM paid_data
 UNION ALL
