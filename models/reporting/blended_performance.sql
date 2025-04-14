@@ -2,8 +2,13 @@
     alias = target.database + '_blended_performance'
 )}}
 
-WITH paid_data as
-    (SELECT channel, date::date, date_granularity, campaign_name, COALESCE(SUM(spend),0) as spend, COALESCE(SUM(acq_spend),0) as acq_spend, COALESCE(SUM(impressions),0) as impressions, 
+{% set date_granularity_list = ['day', 'week', 'month', 'quarter', 'year'] %}
+    
+WITH initial_sho_data as
+    (SELECT *, {{ get_date_parts('date') }} FROM {{ source('reporting','shopify_daily_sales_by_order') }}),
+    
+paid_data as
+    (SELECT channel, date_granularity, date::date, campaign_name, COALESCE(SUM(spend),0) as spend, COALESCE(SUM(acq_spend),0) as acq_spend, COALESCE(SUM(impressions),0) as impressions, 
         COALESCE(SUM(clicks),0) as clicks, COALESCE(SUM(add_to_cart),0) as add_to_cart, COALESCE(SUM(purchases),0) as paid_purchases, 
         COALESCE(SUM(acq_purchases),0) as paid_acq_purchases, COALESCE(SUM(revenue),0) as paid_revenue, 
         0 as sho_purchases, 0 as sho_revenue, 0 as sho_first_orders, 0 as sho_first_order_revenue, 0 as sho_repeat_orders, 0 as sho_repeat_order_revenue, 0 as sho_net_revenue
@@ -27,11 +32,24 @@ WITH paid_data as
     GROUP BY channel, date, date_granularity, campaign_name),
 
     shopify_data as
-    (SELECT 'Shopify' as channel, date, date_granularity, null as campaign_name, 
+    ({%- for date_granularity in date_granularity_list %}    
+    SELECT 'Shopify' as channel, '{{date_granularity}}' as date_granularity, {{date_granularity}} as date, null as campaign_name, 
         0 as spend, 0 as acq_spend, 0 as impressions, 0 as clicks, 0 as add_to_cart, 0 as paid_purchases, 0 as paid_acq_purchases, 0 as paid_revenue,
-        COALESCE(SUM(orders),0) as sho_purchases, COALESCE(SUM(gross_sales),0) as sho_revenue, 
-        COALESCE(SUM(first_orders),0) as sho_first_orders, COALESCE(SUM(first_order_gross_sales),0) as sho_first_order_revenue, 
-        COALESCE(SUM(repeat_orders),0) as sho_repeat_orders, COALESCE(SUM(repeat_order_gross_sales),0) as sho_repeat_order_revenue,
+        COUNT(DISTINCT order_id) as sho_purchases, COALESCE(SUM(gross_revenue),0) as sho_revenue, 
+        COUNT(DISTINCT CASE WHEN customer_order_index = 1 THEN order_id ELSE 0 END) as sho_first_orders, 
+        COALESCE(SUM(CASE WHEN customer_order_index = 1 THEN gross_revenue ELSE 0 END),0) as sho_first_order_revenue, 
+        COUNT(DISTINCT CASE WHEN customer_order_index > 1 THEN order_id ELSE 0 END) as sho_repeat_orders, 
+        COALESCE(SUM(CASE WHEN customer_order_index > 1 THEN gross_revenue ELSE 0 END),0) as sho_repeat_order_revenue,
+        0 as sho_net_revenue
+    FROM initial_sho_data
+    GROUP BY channel, date, date_granularity, campaign_name
+        {% if not loop.last %}UNION ALL
+        {% endif %}
+    {% endfor %}
+    UNION ALL
+    SELECT 'Shopify' as channel, date_granularity, date, null as campaign_name, 
+        0 as spend, 0 as acq_spend, 0 as impressions, 0 as clicks, 0 as add_to_cart, 0 as paid_purchases, 0 as paid_acq_purchases, 0 as paid_revenue,
+        0 as sho_purchases, 0 as sho_revenue, 0 as sho_first_orders, 0 as sho_first_order_revenue, 0 as sho_repeat_orders, 0 as sho_repeat_order_revenue,
         COALESCE(SUM(net_sales),0) as sho_net_revenue
     FROM {{ source('reporting','shopify_sales') }}
     GROUP BY channel, date, date_granularity, campaign_name)
