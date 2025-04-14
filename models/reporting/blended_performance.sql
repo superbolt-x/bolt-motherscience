@@ -5,7 +5,7 @@
 {% set date_granularity_list = ['day', 'week', 'month', 'quarter', 'year'] %}
     
 WITH initial_sho_data as
-    (SELECT *, {{ get_date_parts('date') }} 
+    (SELECT date, order_id, customer_order_index, gross_revenue, {{ get_date_parts('date') }} 
     FROM {{ source('reporting','shopify_daily_sales_by_order') }} ),
     
     paid_data as
