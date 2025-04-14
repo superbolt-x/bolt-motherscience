@@ -5,8 +5,10 @@
 {% set date_granularity_list = ['day', 'week', 'month', 'quarter', 'year'] %}
     
 WITH initial_sho_data as
-    (SELECT date, order_id, customer_order_index, gross_revenue, {{ get_date_parts('date') }} 
-    FROM {{ source('reporting','shopify_daily_sales_by_order') }} ),
+    (SELECT *, {{ get_date_parts('date') }} 
+    FROM 
+        (SELECT date, order_id, customer_order_index, gross_revenue FROM {{ source('reporting','shopify_daily_sales_by_order') }} )
+    ),
     
     paid_data as
     (SELECT channel, date_granularity, date::date, campaign_name, COALESCE(SUM(spend),0) as spend, COALESCE(SUM(acq_spend),0) as acq_spend, COALESCE(SUM(impressions),0) as impressions, 
