@@ -13,6 +13,6 @@ spend,
 impressions,
 link_clicks,
 add_to_cart,
-purchases,
-revenue
+onsite_web_purchase as purchases,
+onsite_web_purchase_value as revenue
 FROM {{ ref('facebook_performance_by_campaign') }}
